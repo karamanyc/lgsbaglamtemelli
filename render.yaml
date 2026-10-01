@@ -1,0 +1,60 @@
+# Render Blueprint — LGS Bağlam sunucusu.
+# Render panelinde: New > Blueprint > bu depoyu seçin. Ayrıntı: sunucu/README.md
+services:
+  - type: web
+    name: lgs-baglam-sunucu
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: sunucu
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /saglik
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Firebase servis hesabı JSON'u (tek satır). Blueprint ilk kurulurken panel sorar.
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      # Google Play satın alma doğrulaması için servis hesabı JSON'u (tek satır).
+      # Play Console'da bu hesaba yetki verilmeli. Boş bırakılırsa
+      # FIREBASE_SERVICE_ACCOUNT kullanılır (o hesap Play Console'a davet edilmişse).
+      - key: GOOGLE_PLAY_SERVICE_ACCOUNT
+        sync: false
+      # iOS abonelik doğrulaması (verifyReceipt) için App-Specific Shared Secret.
+      - key: APPLE_SHARED_SECRET
+        sync: false
+      # İsteğe bağlı: App Store Server API (In-App Purchase anahtarı). Üçü de
+      # doluysa iOS doğrulaması önce bu API ile yapılır. Anahtar .p8 içeriği;
+      # tek satıra yapıştırılırsa satır sonları \n olarak yazılabilir.
+      - key: APPLE_ISSUER_ID
+        sync: false
+      - key: APPLE_KEY_ID
+        sync: false
+      - key: APPLE_PRIVATE_KEY
+        sync: false
+      - key: CRON_SECRET
+        generateValue: true
+
+  - type: cron
+    name: lgs-baglam-hareketsizlik
+    runtime: node
+    region: frankfurt
+    plan: starter
+    # 17:00 UTC = 20:00 Türkiye
+    schedule: "0 17 * * *"
+    rootDir: sunucu
+    buildCommand: npm ci --omit=dev
+    startCommand: npm run cron:hareketsizlik
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: lgs-baglam-sunucu
+          envVarKey: CRON_SECRET
+      # Web servisinin herkese açık adresi. Render farklı bir alt alan adı
+      # verirse (ad doluysa) panelden düzeltin.
+      - key: SUNUCU_URL
+        value: https://lgs-baglam-sunucu.onrender.com

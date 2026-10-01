@@ -1,0 +1,22 @@
+{
+  "name": "lgs-baglam-sunucu",
+  "private": true,
+  "version": "1.0.0",
+  "description": "LGS Bağlam bildirim ve satın alma sunucusu (Render.com Node web servisi)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/sunucu.js",
+    "cron:hareketsizlik": "node scripts/hareketsizlik-cron.js",
+    "check": "node --check src/sunucu.js && node --check src/uygulama.js && node --check src/firebase.js && node --check src/apple.js && node --check src/google.js && node --check src/hesap.js && node --check src/metinler.js && node --check src/bildirim.js && node --check scripts/hareketsizlik-cron.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}
